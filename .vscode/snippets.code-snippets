@@ -1,0 +1,18 @@
+{
+	"Option Class": {
+	  "prefix": "pygo",
+	  "body": [
+		"class ${1}:",
+		"    def __init__(self):",
+		"        pass",
+		"    ",
+		"    def update(self):",
+		"        pass",
+		"    ",
+		"    def draw(self):",
+		"        pass"
+	  ],
+	  "description": "Python Game Object class template"
+	}
+  }
+  
