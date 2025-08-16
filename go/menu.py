@@ -9,12 +9,12 @@ class Menu:
         self.title = None
 
     def Title(self, text: str):
-        self.title = text
+        self.title = text.upper()
         return self
 
     def Option(self, label: str, fn: Callable):
         self.options.append({
-            "label": label,
+            "label": label.upper(),
             "fn": fn
         })
         return self
