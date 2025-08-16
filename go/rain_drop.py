@@ -14,8 +14,7 @@ class RainDrop:
     
     def update(self, world):
         
-        self.life -= 1
-        if self.life <= 0:
+        if self.position[1] > 124 + 8:
             world.raindrops.remove(self)
             
         self.position[0] += self.velocity[0]
