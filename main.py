@@ -8,6 +8,7 @@ from go.rain_drop import RainDrop
 from go.tree import Tree
 
 from go.menu import Menu
+from go.display_text import DisplayText
 
 class Scene:
     game = 'game'
