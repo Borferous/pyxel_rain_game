@@ -1,10 +1,12 @@
 
 import pyxel
+from util import lerp
 
 class FloatText:
     def __init__(self, text: str, position: list, color: int):
         self.text = text
         self.position = position.copy()
+        self.targetY = self.position[1] - 25
         self.life = 60
         self.color = color
         pass
@@ -15,7 +17,7 @@ class FloatText:
         if self.life <= 0:
             world.floatTexts.remove(self)
         
-        self.position[1] -= int(self.life * 0.05)
+        self.position[1] = lerp(self.position[1], self.targetY, 0.05)
         pass
         
     def draw(self):
