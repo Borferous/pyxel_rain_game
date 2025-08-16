@@ -10,10 +10,27 @@ from go.tree import Tree
 from go.menu import Menu
 from go.display_text import DisplayText
 
+TITLE = "Game About Rain"
+
 class Scene:
     game = 'game'
     menu = 'menu'
     lose = 'lose'
+    about = 'about'
+    howtoplay = 'howtoplay'
+
+def txtOutline(x, y, txt, col, outCol, wid=2):
+    # Draw outline
+    for ox in range(-wid, wid + 1):
+        for oy in range(-wid, wid + 1):
+            if ox == 0 and oy == 0:
+                continue  # skip center (main text)
+            pyxel.text(x + ox, y + oy, txt, outCol)
+
+    # Draw main text
+    pyxel.text(x, y, txt, col)
+
+
 
 class App:
     
@@ -23,38 +40,70 @@ class App:
         self.player = Player()
         self.raindrops = []
         self.floatTexts = []
-        self.trees = []
+        self.isUpgrade = False
+        self.trees = [
+            Tree([int(random.randint(0,256)), 128]),
+            Tree([int(random.randint(0,256)), 128]),
+            Tree([int(random.randint(0,256)), 128]),
+            Tree([int(random.randint(0,256)), 128]),
+            Tree([int(random.randint(0,256)), 128])
+        ]
         self.score = 0
         self.lives = 5
         pass
     
+    def gotoAbout(self):
+        self.setScene(Scene.about)
+        self.uiElements = [
+            DisplayText([124,124])
+                .newLine(TITLE, 1)
+                .newLine("By: Bruhder Boi")
+                .newLine("a submission for the mini jam 191:sky!")
+                .newLine("with the limitation: constant descent!")
+                .newLine("This is my first game with pyxel")
+        ,Menu([124,124 + 64]).Option("Go Back", self.gotoMenu)]
+        
+    def howToPlay(self):
+        self.setScene(Scene.howtoplay)
+        self.uiElements = [
+            DisplayText([124,124])
+                .newLine("How to play!", 10)
+                .newLine("Press the A/D key or the arrow keys to move")
+                .newLine("Trees burst into flames for some reason")
+                .newLine("extinguish the flames to save the trees")
+                .newLine("lose 5 trees, and you lose!", 8)
+        ,Menu([124,124 + 64]).Option("Go Back", self.gotoMenu)]
+    
     def gotoMenu(self):
         self.setScene(Scene.menu)
-        self.startMenu = (
+        self.uiElements = [(
             Menu([124,124])
-                .Title('Rain Game Thingy')
+                .Title(TITLE)
                 .Option('Start Game', self.startGame)
-        )
-        pass
+                .Option('How to play', self.howToPlay)
+                .Option('About', self.gotoAbout)
+        )]
     
     def youLose(self):
         self.setScene(Scene.lose)
-        self.loseMenu = (
+        self.uiElements = [(
             Menu([124,124])
                 .Title("You Lose")
                 .Option("Play Again", self.startGame)
                 .Option('Back to Menu', self.gotoMenu)
-        )
-    
+        )]
+            
     def setScene(self, newScene):
         self.transition = 1
+        self.uiElements = []
         self.scene = newScene
     
     def __init__(self):
         self.transition = 0
         self.windowSize = (256, 256)
+        self.uiElements = []
         self.gotoMenu()
-        pyxel.init(self.windowSize[0], self.windowSize[1], title="My App", fps=60, quit_key= pyxel.KEY_ESCAPE)
+        pyxel.init(self.windowSize[0], self.windowSize[1], title=TITLE, fps=60, quit_key= pyxel.KEY_ESCAPE)
         pyxel.load("my_res.pyxres")
         pyxel.run(self.update, self.draw)
         
@@ -69,19 +118,25 @@ class App:
     def update(self):
         
         if self.scene == Scene.game:
-            self.gametick += 1
-            if self.everySec(0.15):
-                self.raindrops.append(RainDrop(self.player.position))
-            if self.everySec(1) and len(self.trees) < 25:
-                self.trees.append(Tree([int(random.randint(0,256)), 128]))
-            self.updateEntts(self.raindrops)
-            self.updateEntts(self.trees)
-            self.updateEntts(self.floatTexts)
-            self.player.update()
-        elif self.scene == Scene.menu:
-            self.startMenu.update()
-        elif self.scene == Scene.lose:
-            self.loseMenu.update()
+            if not self.isUpgrade:
+                self.gametick += 1
+                if self.everySec(0.15):
+                    self.raindrops.append(RainDrop(self.player.position))
+                if self.everySec(5) and len(self.trees) < 25:
+                    self.trees.append(Tree([int(random.randint(0,256)), 128]))
+                self.updateEntts(self.raindrops)
+                self.updateEntts(self.trees)
+                self.updateEntts(self.floatTexts)
+                self.player.update()
+            else:
+                # Show code
+                pass
+            
+            if pyxel.btnp(pyxel.KEY_U):
+                self.isUpgrade = not self.isUpgrade
+        
+        for ui in self.uiElements:
+            ui.update()
         
         if self.transition > 0:
             self.transition -= 0.02
@@ -89,37 +144,40 @@ class App:
     def draw(self):
         pyxel.cls(5)
         
+        # Ground
+        pyxel.rect(0, 128 + 4, 256, 128, 3)
+        for i, d in enumerate([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1]):
+            pyxel.dither(d)
+            pyxel.rect(0, 128 + 4 + 16 * (i + 1), 256, 16, 1)
+        pyxel.dither(1)
+        
         if self.scene == Scene.game:
             self.drawEntts(self.raindrops)
             self.drawEntts(self.trees)
             self.drawEntts(self.floatTexts)
             self.player.draw()
              
-            pyxel.rect(0, 0, 256, 8, 0)
+            pyxel.rect(0, 0, 256, 10, 0)
             scoreText = f"SCORE: {self.score:05}"
-            pyxel.text(1, 1, scoreText, 7)
+            pyxel.text(2, 2, scoreText, 7)
             
+            # Top Bar
             if self.lives <= 0:
                 self.youLose()
-
             for i in range(self.lives):
-                pyxel.blt(256 - ((i + 1) * 10), 0, 0, 16, 0, 8, 8, 0)
-
-            # Ground base
-            pyxel.rect(0, 128 + 4, 256, 128, 3)
-
-            for i, d in enumerate([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1]):
-                pyxel.dither(d)
-                pyxel.rect(0, 128 + 4 + 16 * (i + 1), 256, 16, 1)
-
-            pyxel.dither(1)
+                pyxel.blt(256 - ((i + 1) * 10), 1, 0, 16, 0, 8, 8, 0)
+                
+            txtOutline(2, 248 - 2, 'Press U to open/close shop', 7, 0)
+            txtOutline(2, 248 - 2 - 10, 'Press P to pause', 7, 0)
+                
+            if self.isUpgrade:
+                # Draw Shop
+                pass
 
             
-        elif self.scene == Scene.menu:
-            self.startMenu.draw()
-            
-        elif self.scene == Scene.lose:
-            self.loseMenu.draw()
+
+        for ui in self.uiElements:
+            ui.draw()
 
         pyxel.dither(self.transition)
         pyxel.rect(0,0,256,256,0)
