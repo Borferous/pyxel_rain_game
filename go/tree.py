@@ -24,28 +24,36 @@ class Tree:
         if onFire:
             self.fireTick += 0.1
             if self.tick % 60 == 0:
-                self.health -= 1
+                self.health -= self.isFire
                 if self.health <= 0:
                     world.floatTexts.append(FloatText('-5',self.position, 8))
+                    world.lives -= 1
                     world.score = max(world.score - 5, 0)
                     world.trees.remove(self)
             
         if not onFire and self.tick % 60 == 0 and random.random() <= 0.1:
             self.isFire = int(random.randint(1,5))
                 
-        if onFire:
-            for r in world.raindrops:
-                rx, ry = r.position
-                x, y = self.position
-                rw, rh = r.size
-                w, h = self.size
-                if abs(x - rx) < (w + rw) / 2 and abs(y - ry) < (h + rh) / 2:
+        
+        for r in world.raindrops:
+            rx, ry = r.position
+            x, y = self.position
+            rw, rh = r.size
+            w, h = self.size
+            if abs(x - rx) < (w + rw) / 2 and abs(y - ry) < (h + rh) / 2:
+                
+                if onFire:
                     self.isFire -= 1
                     world.raindrops.remove(r)
                     if self.isFire <= 0:
                         world.floatTexts.append(FloatText('+1',self.position, 10))
                         world.score += 1
-                    break
+                        
+                elif self.health < 100:
+                    world.floatTexts.append(FloatText('+',self.position, 11))
+                    self.health = min(self.health + 5, 100)
+                    world.raindrops.remove(r)
+                    
             
     def draw(self):
         x, y = self.position
