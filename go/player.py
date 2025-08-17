@@ -9,7 +9,8 @@ class Player:
         self.speed = 2
     
     def update(self):
-        self.position[0] += (pyxel.btn(pyxel.KEY_D) - pyxel.btn(pyxel.KEY_A)) * self.speed
+        movex = pyxel.btn(pyxel.KEY_D) - pyxel.btn(pyxel.KEY_A) + pyxel.btn(pyxel.KEY_RIGHT) - pyxel.btn(pyxel.KEY_LEFT)
+        self.position[0] += movex * self.speed
         self.position[0] = clamp(self.position[0], self.size[0] / 2, 256 - self.size[0] / 2)
     
     def draw(self):

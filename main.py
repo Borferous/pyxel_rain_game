@@ -59,6 +59,7 @@ class App:
                 .newLine("Press the A/D key or the arrow keys to move")
                 .newLine("Press the P to pause and unpause the game")
                 .newLine("Press SPACE to spray rain  but it consumes score")
+                .newLine("Press B to end the game")
                 .newLine("Trees burst into flames for some reason")
                 .newLine("extinguish the flames to save the trees")
                 .newLine("you can heal trees with your rain")
@@ -154,14 +155,15 @@ class App:
             self.drawEntts(self.trees)
             self.drawEntts(self.floatTexts)
             self.player.draw()
-             
+            
+            # Top Bar 
             pyxel.rect(0, 0, 256, 10, 0)
             scoreText = f"SCORE: {self.score:05}"
             pyxel.text(2, 2, scoreText, 7)
             
-            # Top Bar
-            if self.lives <= 0:
+            if self.lives <= 0 or pyxel.btnp(pyxel.KEY_B):
                 self.youLose()
+                
             for i in range(self.lives):
                 pyxel.blt(256 - ((i + 1) * 10), 1, 0, 16, 0, 8, 8, 0)
                 
