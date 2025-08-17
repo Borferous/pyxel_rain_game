@@ -10,7 +10,7 @@ from go.tree import Tree
 from go.menu import Menu
 from go.display_text import DisplayText
 
-TITLE = "Game About Rain"
+TITLE = "Would you lose? Nah i'd rain"
 
 class Scene:
     game = 'game'
@@ -18,20 +18,7 @@ class Scene:
     lose = 'lose'
     about = 'about'
     howtoplay = 'howtoplay'
-
-def txtOutline(x, y, txt, col, outCol, wid=2):
-    # Draw outline
-    for ox in range(-wid, wid + 1):
-        for oy in range(-wid, wid + 1):
-            if ox == 0 and oy == 0:
-                continue  # skip center (main text)
-            pyxel.text(x + ox, y + oy, txt, outCol)
-
-    # Draw main text
-    pyxel.text(x, y, txt, col)
-
-
-
+    
 class App:
     
     def startGame(self):
@@ -40,13 +27,12 @@ class App:
         self.player = Player()
         self.raindrops = []
         self.floatTexts = []
-        self.isUpgrade = False
+        self.difficulty = 1
+        self.isPause = False
         self.trees = [
             Tree([int(random.randint(0,256)), 128]),
             Tree([int(random.randint(0,256)), 128]),
             Tree([int(random.randint(0,256)), 128]),
-            Tree([int(random.randint(0,256)), 128]),
-            Tree([int(random.randint(0,256)), 128])
         ]
         self.score = 0
         self.lives = 5
@@ -60,6 +46,8 @@ class App:
                 .newLine("By: Bruhder Boi")
                 .newLine("a submission for the mini jam 191:sky!")
                 .newLine("with the limitation: constant descent!")
+                .newLine("In this game trees burn for absolutely no reason")
+                .newLine("Extinguish the fire to protect the trees")
                 .newLine("This is my first game with pyxel")
         ,Menu([124,124 + 64]).Option("Go Back", self.gotoMenu)]
         
@@ -69,8 +57,11 @@ class App:
             DisplayText([124,124])
                 .newLine("How to play!", 10)
                 .newLine("Press the A/D key or the arrow keys to move")
+                .newLine("Press the P to pause and unpause the game")
+                .newLine("Press SPACE to spray rain  but it consumes score")
                 .newLine("Trees burst into flames for some reason")
                 .newLine("extinguish the flames to save the trees")
+                .newLine("you can heal trees with your rain")
                 .newLine("lose 5 trees, and you lose!", 8)
         ,Menu([124,124 + 64]).Option("Go Back", self.gotoMenu)]
     
@@ -88,7 +79,7 @@ class App:
         self.setScene(Scene.lose)
         self.uiElements = [(
             Menu([124,124])
-                .Title("You Lose")
+                .Title(f"Score: {self.score}")
                 .Option("Play Again", self.startGame)
                 .Option('Back to Menu', self.gotoMenu)
         )]
@@ -118,22 +109,29 @@ class App:
     def update(self):
         
         if self.scene == Scene.game:
-            if not self.isUpgrade:
+            if not self.isPause:
                 self.gametick += 1
                 if self.everySec(0.15):
-                    self.raindrops.append(RainDrop(self.player.position))
-                if self.everySec(5) and len(self.trees) < 25:
+                    if pyxel.btn(pyxel.KEY_SPACE) and self.score > 0:
+                        self.score -= 1
+                        for i in range(3):
+                            self.raindrops.append(RainDrop(self.player.position, i - 1))
+                    else:
+                        self.raindrops.append(RainDrop(self.player.position, 0))
+                        
+                if self.everySec(10) and self.difficulty < 10:
+                    self.difficulty += 1
+                    
+                if self.everySec(5) and len(self.trees) < 20:
                     self.trees.append(Tree([int(random.randint(0,256)), 128]))
+                    
                 self.updateEntts(self.raindrops)
                 self.updateEntts(self.trees)
                 self.updateEntts(self.floatTexts)
                 self.player.update()
-            else:
-                # Show code
-                pass
             
-            if pyxel.btnp(pyxel.KEY_U):
-                self.isUpgrade = not self.isUpgrade
+            if pyxel.btnp(pyxel.KEY_P):
+                self.isPause = not self.isPause
         
         for ui in self.uiElements:
             ui.update()
@@ -167,14 +165,12 @@ class App:
             for i in range(self.lives):
                 pyxel.blt(256 - ((i + 1) * 10), 1, 0, 16, 0, 8, 8, 0)
                 
-            txtOutline(2, 248 - 2, 'Press U to open/close shop', 7, 0)
-            txtOutline(2, 248 - 2 - 10, 'Press P to pause', 7, 0)
-                
-            if self.isUpgrade:
-                # Draw Shop
-                pass
-
             
+            if self.isPause:
+                text = "PAUSED"
+                x = pyxel.width // 2 - (len(text) * 4) // 2
+                y = 24
+                pyxel.text(x, y, text, 0)
 
         for ui in self.uiElements:
             ui.draw()
