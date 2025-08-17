@@ -4,8 +4,8 @@ import random
 class RainDrop:
     sprites = [(0,8),(8,8)]
     size = [8,8]
-    velocity = [0, 2]
-    def __init__(self, position: list):
+    def __init__(self, position: list, xvel: int):
+        self.velocity = [xvel, 2]
         self.sprite = random.choice(self.sprites)
         sx, sy = position[0] + random.randint(-3,3), position[1]
         self.position = [sx, sy]
