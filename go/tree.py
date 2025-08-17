@@ -26,13 +26,12 @@ class Tree:
             if self.tick % 60 == 0:
                 self.health -= self.isFire
                 if self.health <= 0:
-                    world.floatTexts.append(FloatText('-5',self.position, 8))
+                    world.floatTexts.append(FloatText('-1',self.position, 8))
                     world.lives -= 1
-                    world.score = max(world.score - 5, 0)
                     world.trees.remove(self)
             
         if not onFire and self.tick % 60 == 0 and random.random() <= 0.1:
-            self.isFire = int(random.randint(1,5))
+            self.isFire = int(random.randint(1,world.difficulty))
                 
         
         for r in world.raindrops:
@@ -46,8 +45,9 @@ class Tree:
                     self.isFire -= 1
                     world.raindrops.remove(r)
                     if self.isFire <= 0:
-                        world.floatTexts.append(FloatText('+1',self.position, 10))
-                        world.score += 1
+                        reward = 10
+                        world.floatTexts.append(FloatText(f'+{reward}',self.position, 10))
+                        world.score += reward
                         
                 elif self.health < 100:
                     world.floatTexts.append(FloatText('+',self.position, 11))
